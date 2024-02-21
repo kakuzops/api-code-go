@@ -8,7 +8,8 @@ import (
 	"github.com/kakuzops/api-code-go/src/config/rest_err"
 	validation "github.com/kakuzops/api-code-go/src/config/validate"
 	request "github.com/kakuzops/api-code-go/src/controller/model"
-	"github.com/kakuzops/api-code-go/src/controller/model/response"
+	model "github.com/kakuzops/api-code-go/src/model"
+	"github.com/kakuzops/api-code-go/src/model/service"
 	"go.uber.org/zap"
 )
 
@@ -30,17 +31,24 @@ func CreateUser(c *gin.Context) {
 		c.JSON(restErr.Code, restErr)
 		return
 	}
-	response := response.UserResponse{
-		ID:    "teste",
-		Email: userRequest.Email,
-		Name:  userRequest.Name,
-		Age:   userRequest.Age,
+
+	domain := model.NewUserDomain(
+		userRequest.Email,
+		userRequest.Password,
+		userRequest.Name,
+		userRequest.Age,
+	)
+
+	service := service.NewUserDomainService()
+	if err := service.CreateUser(domain); err != nil {
+		c.JSON(err.Code, err)
 	}
+
 	logger.Info("User created Controller",
 		zap.String("Jorney", "CreateUser"),
 	)
 
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, "")
 }
 
 func DeleteUser(c *gin.Context) {}
